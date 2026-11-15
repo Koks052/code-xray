@@ -22,6 +22,19 @@ AI coding agents can waste context opening whole files just to find one function
 - Flags potentially unreferenced Python functions and classes for human review.
 - Runs on Python's standard library alone; no package installation or network access required.
 
+## Works across AI coding agents
+
+Code X-Ray uses the open [Agent Skills](https://agentskills.io/home) folder format: one portable `SKILL.md` plus its local script. Agent Skills-compatible coding clients can load the same skill; the installer places it in the common locations below.
+
+| Agent | Skill location |
+|---|---|
+| Claude Code | `~/.claude/skills/code-xray` and `.claude/skills/code-xray` |
+| GitHub Copilot | `.github/skills/code-xray` |
+| Cursor | `.cursor/skills/code-xray` |
+| OpenAI Codex and `.agents/skills` clients | `~/.agents/skills/code-xray` and `.agents/skills/code-xray` |
+
+No single skill format can automatically integrate with **every** AI product. If your coding agent does not discover Agent Skills, load `skills/code-xray/SKILL.md` through its custom instructions or skill importer, then run the bundled script directly. The root [`AGENTS.md`](AGENTS.md) provides a generic project-instructions fallback for agents that support it. Claude slash shortcuts are Claude-specific; other agents use their own skill selector or the CLI commands.
+
 ## Three modes
 
 ### 1. `skeleton` — inspect structure, not the whole file
@@ -117,23 +130,25 @@ On Windows, replace `python3` with `py -3` (or the full path to your Python 3 ex
 py -3 skills\code-xray\scripts\xray.py callers my_function
 ```
 
-Install the skill for Claude Code and GitHub Copilot with one command:
+Install for the common agents above with one command:
 
 ```console
-# Windows PowerShell
+# Windows PowerShell (Claude and Codex user skills plus project skills)
 .\install.ps1
 
 # macOS/Linux (or Git Bash/WSL on Windows)
 sh install.sh
 ```
 
-The installer adds the skill to `~/.claude/skills/code-xray`, adds the `/xray`, `/callers`, and `/dead-code` command shortcuts to `~/.claude/commands/`, and copies the skill to `.github/skills/code-xray` in this repository. Restart Claude Code after installation. You can also invoke the skill itself as `/code-xray`. Existing Claude commands with the same shortcut names are preserved.
-
-For Cursor, copy `skills/code-xray` to `.cursor/skills/code-xray` if project skills are enabled in your version. The script and skill instructions are otherwise editor-agnostic.
+The installer copies the portable skill to Claude Code and Codex user directories and to the Claude Code, GitHub Copilot, Cursor, and `.agents/skills` project directories. It also installs `/xray`, `/callers`, and `/dead-code` for Claude Code, preserving unrelated commands with the same names. Restart the coding agent if it does not refresh skills automatically. You can also call the skill `/code-xray` in Claude Code or run the CLI directly.
 
 ## Agent workflow
 
 The skill instructions live in [`skills/code-xray/SKILL.md`](skills/code-xray/SKILL.md). They direct agents to outline files over 150 lines before reading, inspect callers before changing or removing a function, and treat dead-code output as a review list.
+
+## Promo video
+
+Watch the short English narrated promo (about 23 seconds): [`promo/code-xray-promo.mp4`](promo/code-xray-promo.mp4). It demonstrates one measured self-scan (~3,505 source tokens to ~298 outline tokens, approximately 91% fewer in that example only), the three modes, and supported agents. Savings are estimated and vary by file. To regenerate it locally on Windows, see [`promo/README.md`](promo/README.md) and run `.\promo\render-promo.ps1`.
 
 ## Limitations
 

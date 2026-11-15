@@ -3,14 +3,25 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $skillSource = Join-Path $repoRoot 'skills\code-xray'
 $claudeRoot = Join-Path $HOME '.claude'
-$claudeSkill = Join-Path $claudeRoot 'skills\code-xray'
 $claudeCommandsSource = Join-Path $repoRoot '.claude\commands'
 $claudeCommands = Join-Path $claudeRoot 'commands'
-$copilotSkill = Join-Path $repoRoot '.github\skills\code-xray'
 
-New-Item -ItemType Directory -Force -Path $claudeSkill, $claudeCommands, $copilotSkill | Out-Null
-Copy-Item -Path (Join-Path $skillSource '*') -Destination $claudeSkill -Recurse -Force
-Copy-Item -Path (Join-Path $skillSource '*') -Destination $copilotSkill -Recurse -Force
+$skillTargets = @(
+    [pscustomobject]@{ Name = 'Claude Code (user)'; Path = (Join-Path $HOME '.claude\skills\code-xray') }
+    [pscustomobject]@{ Name = 'Codex and Agent Skills clients (user)'; Path = (Join-Path $HOME '.agents\skills\code-xray') }
+    [pscustomobject]@{ Name = 'Claude Code (project)'; Path = (Join-Path $repoRoot '.claude\skills\code-xray') }
+    [pscustomobject]@{ Name = 'GitHub Copilot (project)'; Path = (Join-Path $repoRoot '.github\skills\code-xray') }
+    [pscustomobject]@{ Name = 'Cursor (project)'; Path = (Join-Path $repoRoot '.cursor\skills\code-xray') }
+    [pscustomobject]@{ Name = 'Codex and Agent Skills clients (project)'; Path = (Join-Path $repoRoot '.agents\skills\code-xray') }
+)
+
+foreach ($target in $skillTargets) {
+    New-Item -ItemType Directory -Force -Path $target.Path | Out-Null
+    Copy-Item -Path (Join-Path $skillSource '*') -Destination $target.Path -Recurse -Force
+    Write-Output "Installed code-xray for $($target.Name): $($target.Path)"
+}
+
+New-Item -ItemType Directory -Force -Path $claudeCommands | Out-Null
 
 Get-ChildItem -LiteralPath $claudeCommandsSource -Filter '*.md' -File | ForEach-Object {
     $destination = Join-Path $claudeCommands $_.Name
@@ -22,6 +33,4 @@ Get-ChildItem -LiteralPath $claudeCommandsSource -Filter '*.md' -File | ForEach-
     }
 }
 
-Write-Output "Installed code-xray for Claude Code: $claudeSkill"
 Write-Output "Installed code-xray commands for Claude Code: $claudeCommands"
-Write-Output "Installed code-xray for GitHub Copilot: $copilotSkill"

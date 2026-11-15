@@ -4,14 +4,25 @@ set -eu
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 REPO_ROOT=$SCRIPT_DIR
 SOURCE=$REPO_ROOT/skills/code-xray
-CLAUDE_DEST=$HOME/.claude/skills/code-xray
 CLAUDE_COMMANDS_SOURCE=$REPO_ROOT/.claude/commands
 CLAUDE_COMMANDS_DEST=$HOME/.claude/commands
-COPILOT_DEST=$REPO_ROOT/.github/skills/code-xray
 
-mkdir -p "$CLAUDE_DEST" "$CLAUDE_COMMANDS_DEST" "$COPILOT_DEST"
-cp -R "$SOURCE/." "$CLAUDE_DEST/"
-cp -R "$SOURCE/." "$COPILOT_DEST/"
+install_skill() {
+    destination=$1
+    label=$2
+    mkdir -p "$destination"
+    cp -R "$SOURCE/." "$destination/"
+    printf 'Installed code-xray for %s: %s\n' "$label" "$destination"
+}
+
+install_skill "$HOME/.claude/skills/code-xray" "Claude Code (user)"
+install_skill "$HOME/.agents/skills/code-xray" "Codex and Agent Skills clients (user)"
+install_skill "$REPO_ROOT/.claude/skills/code-xray" "Claude Code (project)"
+install_skill "$REPO_ROOT/.github/skills/code-xray" "GitHub Copilot (project)"
+install_skill "$REPO_ROOT/.cursor/skills/code-xray" "Cursor (project)"
+install_skill "$REPO_ROOT/.agents/skills/code-xray" "Codex and Agent Skills clients (project)"
+
+mkdir -p "$CLAUDE_COMMANDS_DEST"
 
 for command_file in "$CLAUDE_COMMANDS_SOURCE"/*.md; do
     [ -f "$command_file" ] || continue
@@ -23,7 +34,4 @@ for command_file in "$CLAUDE_COMMANDS_SOURCE"/*.md; do
     fi
 done
 
-printf 'Installed code-xray for Claude Code: %s\n' "$CLAUDE_DEST"
 printf 'Installed code-xray commands for Claude Code: %s\n' "$CLAUDE_COMMANDS_DEST"
-printf 'Installed code-xray for GitHub Copilot: %s\n' "$COPILOT_DEST"
-printf 'For Cursor, copy skills/code-xray into .cursor/skills/code-xray if your Cursor version uses project skills.\n'
